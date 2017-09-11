@@ -18,6 +18,12 @@ print "------------------------------------------"
 logging.basicConfig(filename="Wifi.log", level=logging.DEBUG)
 
 
+def get_timestamp():
+    # Current local time getter
+    clock = datetime.now().strftime('[%Y-%m-%d %H:%M]')
+    return clock
+
+
 def run_win_cmd(cmd):
     result = []
     process = subprocess.Popen(cmd,
@@ -29,16 +35,19 @@ def run_win_cmd(cmd):
     errcode = process.returncode
     for line in result:
         print(line)
+	logging.debug(line)
     if errcode is not None:
         raise Exception('cmd %s failed, see above for details', cmd)
 
 
 def ping_alive():
+    clock = get_timestamp()
     try:
         r = requests.get('http://google.com')
     except Exception, e:
-        logging.debug(clock+"Could not restart adapter Wifi.")
+        logging.debug(clock+" WiFi connection test failed.")
         return 500
+    logging.debug(clock+" WiFi test passed OK.")
     return r.status_code
 
 
@@ -51,12 +60,11 @@ def restart_wifi_adapter():
 def loop_mon():
     test = ping_alive()
     if test != 200:
-        # Current local time getter
-        clock = datetime.now().strftime('[%Y-%m-%d %H:%M]')
         # Logging and restart
+	clock = get_timestamp()
         logging.debug(clock+" Restarting adapter.")
         print clock+" Restarting adapter..."
         restart_wifi_adapter()
-    threading.Timer(5, loop_mon).start()
+    threading.Timer(300, loop_mon).start()
 
 loop_mon()
