@@ -54,6 +54,10 @@ def ping_alive():
 def restart_wifi_adapter():
     run_win_cmd('netsh interface set interface "WiFi" admin=disable')
     sleep(3)
+    run_win_cmd('net stop WlanSvc')
+    sleep(3)
+    run_win_cmd('net start WlanSvc')
+    sleep(3)
     run_win_cmd('netsh interface set interface "WiFi" admin=enable')
 
 
